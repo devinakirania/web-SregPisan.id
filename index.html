@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SregPisan.id </title>
+    <meta name="description" content="SregPisan.Id prediksi ukuran pakaian yang pas berdasarkan data tubuh Anda. Kaos, hoodie, dan kemeja formal dengan algoritma regresi linear.">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=3.0.0">
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="assets/img/sregpisan.id.png" alt="SregPisan.Id" class="logo-img">
+                </div>
+                <span>SregPisan.id</span>
+            </div>
+
+            <div class="nav-links">
+                <a href="javascript:void(0)" onclick="changePage('hero', this)" data-i18n="nav_home">Beranda</a>
+                <a href="javascript:void(0)" onclick="changePage('dataset', this)" data-i18n="nav_dataset">Dataset</a>
+                <a href="javascript:void(0)" onclick="changePage('regresi', this)" data-i18n="nav_regression">Model Regresi</a>
+                <a href="javascript:void(0)" onclick="changePage('scatter', this)" data-i18n="nav_visualization">Visualisasi</a>
+                <a href="javascript:void(0)" class="active" onclick="changePage('prediksi', this)" data-i18n="nav_prediction">Prediksi & 2D</a>
+                <a href="javascript:void(0)" onclick="changePage('ukuran', this)" data-i18n="nav_sizes">Patokan Ukuran</a>
+            </div>
+
+            <div class="nav-right">
+                <button id="btnLangID" class="nav-btn lang-btn active" onclick="setLanguage('id')" style="min-width: 40px;">ID</button>
+                <button id="btnLangEN" class="nav-btn lang-btn" onclick="setLanguage('en')" style="min-width: 40px;">EN</button>
+                <button id="themeToggle" class="theme-toggle" type="button" aria-label="Ganti mode gelap/terang">🌙</button>
+                <button class="nav-btn" onclick="scrollToSection('prediksi')" data-i18n="btn_predict">Coba Prediksi</button>
+            </div>
+        </nav>
+
+        <!-- HERO -->
+        <section class="hero active-page" id="hero">
+            <div class="hero-tag" data-i18n="hero_tag">Sistem Prediksi Berbasis Regresi Linear Least Square</div>
+
+            <h1 data-i18n="hero_title">
+                Temukan ukuran pakaian <span>yang pas</span> untuk tubuhmu.
+            </h1>
+
+            <p data-i18n="hero_desc">
+                Prediksi ukuran kaos, hoodie, dan kemeja formal berdasarkan data antropometri. Masukkan tinggi, berat, dan dimensi tubuhmu SregPisan.id akan merekomendasikan ukuran yang tepat secara real-time.
+            </p>
+
+            <div class="hero-actions">
+                <button class="btn-primary" onclick="scrollToSection('prediksi')" data-i18n="hero_btn_start">Mulai Prediksi</button>
+                <button class="btn-secondary" onclick="scrollToSection('regresi')" data-i18n="hero_btn_model">Lihat Model</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4 data-i18n="stat_slope">Slope Global (b)</h4>
+                    <h2 id="statSlope">-</h2>
+                </div>
+                <div class="stat-card">
+                    <h4 data-i18n="stat_intercept">Intercept Global (a)</h4>
+                    <h2 id="statIntercept">-</h2>
+                </div>
+                <div class="stat-card">
+                    <h4 data-i18n="stat_correlation">Korelasi (r)</h4>
+                    <h2 id="statKorelasi">-</h2>
+                </div>
+                <div class="stat-card">
+                    <h4 data-i18n="stat_r2">Koefisien R²</h4>
+                    <h2 id="statR2">-</h2>
+                </div>
+                <div class="stat-card">
+                    <h4 data-i18n="stat_rmse">RMSE</h4>
+                    <h2 id="statRmse">-</h2>
+                </div>
+                <div class="stat-card">
+                    <h4 data-i18n="stat_total">Total Responden</h4>
+                    <h2 id="statTotalData">-</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- DATASET -->
+        <section id="dataset">
+            <h2 class="section-title" data-i18n="dataset_title">52 data antropometri sebagai basis model</h2>
+            <p class="section-desc" data-i18n="dataset_desc">
+                Data tinggi badan, berat badan, BMI, dan kategori tubuh yang digunakan sebagai dasar perhitungan model regresi.
+            </p>
+
+            <div class="dataset-controls">
+                <div class="search-input-wrap">
+                    <input id="datasetSearch" type="search" data-i18n-placeholder="dataset_search" placeholder="Cari (tinggi, berat, gender, kategori)…" />
+                </div>
+                <div class="filter-wrap">
+                    <select id="datasetGender">
+                        <option value="all" data-i18n="dataset_gender_all">Semua Gender</option>
+                        <option value="L" data-i18n="dataset_gender_male">Laki-laki</option>
+                        <option value="P" data-i18n="dataset_gender_female">Perempuan</option>
+                    </select>
+                    <span id="datasetCount" data-i18n-template="dataset_count">52 data ditemukan</span>
+                </div>
+            </div>
+
+            <div class="card dataset-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-i18n="dataset_table_no">No</th>
+                            <th data-i18n="dataset_table_gender">JK</th>
+                            <th data-i18n="dataset_table_height">TB (cm)</th>
+                            <th data-i18n="dataset_table_weight">BB (kg)</th>
+                            <th data-i18n="dataset_table_bmi">BMI</th>
+                            <th data-i18n="dataset_table_category">Kategori</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- REGRESI -->
+        <section id="regresi">
+            <h2 class="section-title" data-i18n="regression_title">Model Regresi Tinggi dan Berat Badan</h2>
+            <p class="section-desc" data-i18n="regression_desc">
+                Persamaan dihitung dengan metode Least Square untuk melihat tren berat badan terhadap tinggi badan. Model dipisah per gender agar pembanding lebih relevan.
+            </p>
+
+            <div class="regression-grid">
+                <div class="card">
+                    <p style="color: var(--text-secondary); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;" data-i18n="regression_eq_general">Persamaan Umum (Gabungan)</p>
+                    <div class="formula" id="eqGlobal">BB = a + b × TB</div>
+                </div>
+                <div class="card">
+                    <p style="color: #a78bfa; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;" data-i18n="regression_eq_male">Khusus Laki-laki</p>
+                    <div class="formula" id="eqMale">BB = a + b × TB</div>
+                </div>
+                <div class="card">
+                    <p style="color: #6ee7b7; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;" data-i18n="regression_eq_female">Khusus Perempuan</p>
+                    <div class="formula" id="eqFemale">BB = a + b × TB</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 16px; font-weight: 800; font-size: 1rem; letter-spacing: -0.3px;" data-i18n="regression_adjustment">Penyesuaian Ukuran Otomatis</h3>
+                <p style="line-height: 1.8; color: var(--text-secondary); font-size: 0.9rem;" data-i18n="regression_adjustment_desc">
+                    Diberikan pasangan data <span style="color: var(--text); font-weight: 600;">(TBᵢ, BBᵢ)</span>, sistem mengevaluasi penyimpangan berat aktual terhadap tren garis lurus regresi gender. Jika status metabolisme tubuh terdeteksi masuk ke dalam kategori <b>Obesitas (BMI ≥ 30)</b>, algoritma rekomendasi otomatis dinaikkan satu ukuran untuk memberi ruang pakai yang lebih nyaman.
+                </p>
+            </div>
+        </section>
+
+        <!-- SCATTER -->
+        <section id="scatter">
+            <h2 class="section-title" data-i18n="scatter_title">Visualisasi perbandingan TB & BB responden</h2>
+            <p class="section-desc" data-i18n="scatter_desc">
+                Grafik membandingkan tinggi dan berat dari seluruh responden. Warna batang mewakili gender responden.
+            </p>
+            <div class="card scatter-wrapper">
+                <canvas id="scatterChart"></canvas>
+            </div>
+        </section>
+
+        <!-- PREDIKSI -->
+        <section id="prediksi">
+            <h2 class="section-title" data-i18n="prediction_title">Sesuaikan tubuhmu, lihat hasil real-time</h2>
+            <p class="section-desc" data-i18n="prediction_desc">
+                Field opsional otomatis terisi dari rumus turunan TB/BB/gender. Visualisasi pakaian dan rekomendasi ukuran ikut menyesuaikan.
+            </p>
+            <div class="prediction-layout">
+                <!-- LEFT PANEL -->
+                <div class="card prediction-panel">
+                    <h3 style="margin-bottom: 20px; font-weight: 800; font-size: 1rem; letter-spacing: -0.3px;" data-i18n="prediction_body_title">Data Tubuh</h3>
+
+                    <div class="input-section">
+                        <div class="input-section-header">
+                            <div>
+                                <p class="section-title-small" data-i18n="prediction_standard_title">Ukuran Standar</p>
+                                <p class="section-desc-small" data-i18n="prediction_standard_desc">Masukkan tinggi dan berat badan untuk rekomendasi awal.</p>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="gender" data-i18n="prediction_gender">Jenis Kelamin</label>
+                                <select id="gender">
+                                    <option value="P" data-i18n="dataset_gender_female">Perempuan</option>
+                                    <option value="L" data-i18n="dataset_gender_male">Laki-laki</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="height" data-i18n="prediction_height">Tinggi (cm)</label>
+                                <input type="number" id="height" value="158" min="100" max="220" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label for="weight" data-i18n="prediction_weight">Berat (kg)</label>
+                                <input type="number" id="weight" value="50" min="20" max="200" step="0.1">
+                            </div>
+                            <div class="input-group bmi-group">
+                                <label for="bmi" data-i18n="prediction_bmi">BMI & Status</label>
+                                <input type="text" id="bmi" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="toggle-section" id="toggleOtherSizes" data-i18n="prediction_toggle">Ukuran Tambahan ▾</button>
+                    <div class="other-sizes-panel collapsed" id="otherSizesPanel">
+                        <div class="input-group">
+                            <label for="shoulderWidth" data-i18n="prediction_shoulder">Lebar Bahu (cm)</label>
+                            <input type="number" id="shoulderWidth" placeholder="mis. 40" min="30" max="70" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label for="chestCircumference" data-i18n="prediction_chest">Lingkar Dada (cm)</label>
+                            <input type="number" id="chestCircumference" placeholder="mis. 90" min="60" max="140" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label for="waistCircumference" data-i18n="prediction_waist">Lingkar Pinggang (cm)</label>
+                            <input type="number" id="waistCircumference" placeholder="mis. 70" min="50" max="130" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label for="hipCircumference" data-i18n="prediction_hip">Lingkar Pinggul (cm)</label>
+                            <input type="number" id="hipCircumference" placeholder="mis. 95" min="60" max="140" step="0.1">
+                        </div>
+                    </div>
+
+                    <!-- JENIS BAJU TABS -->
+                    <div class="input-section">
+                        <p class="section-title-small" style="margin-bottom: 10px;" data-i18n="prediction_clothing_type">Jenis Pakaian</p>
+                        <div class="type-tabs">
+                            <button type="button" class="type-tab active" id="tab-kaos" onclick="selectClothingType('kaos', this)" data-i18n="clothing_kaos"> Kaos</button>
+                            <button type="button" class="type-tab" id="tab-hoodie" onclick="selectClothingType('hoodie', this)" data-i18n="clothing_hoodie">Hoodie</button>
+                            <button type="button" class="type-tab" id="tab-formal" onclick="selectClothingType('formal', this)" data-i18n="clothing_formal"> Formal</button>
+                        </div>
+
+                        <!-- WARNA -->
+                        <p class="section-desc-small" style="margin-bottom: 8px; margin-top: 12px;" data-i18n="prediction_color">Pilih warna:</p>
+                        <div class="color-swatches">
+                            <button type="button" class="swatch active" data-color="hitam" style="background-color: #111827;" title="Hitam"></button>
+                            <button type="button" class="swatch" data-color="putih" style="background-color: #f8fafc; border: 1.5px solid #ddd;" title="Putih"></button>
+                            <button type="button" class="swatch" data-color="abu" style="background-color: #6b7280;" title="Abu-abu"></button>
+                            <button type="button" class="swatch" data-color="biru" style="background-color: #2563eb;" title="Biru"></button>
+                            <button type="button" class="swatch" data-color="cyan" style="background-color: #06b6d4;" title="Cyan"></button>
+                            <button type="button" class="swatch" data-color="teal" style="background-color: #0d9488;" title="Teal"></button>
+                            <button type="button" class="swatch" data-color="hijau" style="background-color: #059669;" title="Hijau"></button>
+                            <button type="button" class="swatch" data-color="kuning" style="background-color: #eab308;" title="Kuning"></button>
+                            <button type="button" class="swatch" data-color="jingga" style="background-color: #ea580c;" title="Jingga"></button>
+                            <button type="button" class="swatch" data-color="merah" style="background-color: #dc2626;" title="Merah"></button>
+                            <button type="button" class="swatch" data-color="merahmuda" style="background-color: #db2777;" title="Merah Muda"></button>
+                            <button type="button" class="swatch" data-color="ungu" style="background-color: #7c3aed;" title="Ungu"></button>
+                        </div>
+                    </div>
+
+                    <!-- REKOMENDASI UKURAN -->
+                    <div class="recommend-grid">
+                        <div class="mini-card">
+                            <p class="recommend-label" id="recLabel">Rekomendasi Kaos</p>
+                            <div class="recommend-title" id="shirtSize">-</div>
+                            <p class="recommend-range" id="shirtRange">-</p>
+                            <div class="progress"><span id="shirtProgress" style="width: 0%"></span></div>
+                        </div>
+                    </div>
+
+                    <div id="interpretationBox">-</div>
+                </div>
+
+                <!-- RIGHT — VISUALIZER -->
+                <div class="card three-card" id="shirtVisualizerCard">
+                    <div class="avatar-header">
+                        <h3 data-i18n="prediction_visualizer">Visualisasi Pakaian</h3>
+                        <p id="avatarSubtitle" data-i18n="prediction_subtitle">Rekomendasi sesuai tubuh Anda</p>
+                    </div>
+                    <div class="clothing-type-badge" id="clothingTypeBadge">Kaos</div>
+                    <div class="avatar-image-container">
+                        <div class="avatar-scale-wrapper" id="shirtScaleWrapper">
+                            <div class="shirt-color-container" id="shirtColorContainer">
+                                <img id="avatarImage" src="assets/img/kaos_perempuan_hitam.png?v=3.3.0" alt="Visualisasi Pakaian">
+                            </div>
+                        </div>
+                        <div class="size-badge-overlay shirt-badge" id="shirtSizeOverlay" title="Ukuran">-</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PATOKAN UKURAN -->
+        <section id="ukuran">
+            <h2 class="section-title" data-i18n="size_title">Standar ukuran marketplace (Shopee)</h2>
+            <p class="section-desc" data-i18n="size_desc">
+                Acuan rentang TB, BB, dan dimensi untuk tiap ukuran pakaian. Sistem memetakan hasil prediksi ke ukuran terdekat di chart ini.
+            </p>
+
+            <div class="size-table-tabs">
+                <button class="size-table-tab active" onclick="switchSizeTab('kaos', this)" data-i18n="clothing_kaos">Kaos</button>
+                <button class="size-table-tab" onclick="switchSizeTab('hoodie', this)" data-i18n="clothing_hoodie">Hoodie</button>
+                <button class="size-table-tab" onclick="switchSizeTab('formal', this)" data-i18n="clothing_formal">Formal</button>
+            </div>
+
+            <div class="size-table-panel active" id="sizePanel-kaos">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; font-weight: 800; font-size: 1rem;" data-i18n="size_kaos_title">Kaos (T-Shirt)</h3>
+                    <table style="font-size: 0.88rem;">
+                        <thead><tr><th data-i18n="size_table_header_size">Size</th><th data-i18n="size_table_header_weight">Berat (BB)</th><th data-i18n="size_table_header_height">Tinggi (TB)</th><th data-i18n="size_table_header_chest">Lebar Dada × Panjang</th></tr></thead>
+                        <tbody id="sizeChartKaosView"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="size-table-panel" id="sizePanel-hoodie">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; font-weight: 800; font-size: 1rem;" data-i18n="size_hoodie_title">Hoodie</h3>
+                    <table style="font-size: 0.88rem;">
+                        <thead><tr><th data-i18n="size_table_header_size">Size</th><th data-i18n="size_table_header_weight">Berat (BB)</th><th data-i18n="size_table_header_height">Tinggi (TB)</th><th data-i18n="size_table_header_chest">Lebar Dada × Panjang</th></tr></thead>
+                        <tbody id="sizeChartHoodieView"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="size-table-panel" id="sizePanel-formal">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; font-weight: 800; font-size: 1rem;" data-i18n="size_formal_title">Kemeja Formal</h3>
+                    <table style="font-size: 0.88rem;">
+                        <thead><tr><th data-i18n="size_table_header_size">Size</th><th data-i18n="size_table_header_weight">Berat (BB)</th><th data-i18n="size_table_header_height">Tinggi (TB)</th><th data-i18n="size_table_header_chest">Lebar Dada × Panjang</th></tr></thead>
+                        <tbody id="sizeChartFormalView"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer data-i18n="footer_text">
+            © 2026 Kelompok 7
+        </footer>
+
+    </div><!-- /container -->
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-nav">
+        <a href="javascript:void(0)" class="mobile-nav-link active" onclick="changePage('hero', this)">
+            <span class="mobile-nav-icon">🏠</span>
+            <span data-i18n="mobile_home">Beranda</span>
+        </a>
+        <a href="javascript:void(0)" class="mobile-nav-link" onclick="changePage('prediksi', this)">
+            <span class="mobile-nav-icon">📏</span>
+            <span data-i18n="mobile_prediction">Prediksi</span>
+        </a>
+        <a href="javascript:void(0)" class="mobile-nav-link" onclick="changePage('dataset', this)">
+            <span class="mobile-nav-icon">📊</span>
+            <span data-i18n="mobile_dataset">Dataset</span>
+        </a>
+        <a href="javascript:void(0)" class="mobile-nav-link" onclick="changePage('regresi', this)">
+            <span class="mobile-nav-icon">📐</span>
+            <span data-i18n="mobile_model">Model</span>
+        </a>
+        <a href="javascript:void(0)" class="mobile-nav-link" onclick="changePage('ukuran', this)">
+            <span class="mobile-nav-icon">👕</span>
+            <span data-i18n="mobile_sizes">Ukuran</span>
+        </a>
+    </div>
+
+    <div id="errorLog" style="position:fixed;right:16px;bottom:16px;z-index:9999;max-width:360px;background:rgba(255,50,50,0.06);border:1px solid rgba(255,50,50,0.18);color:#ffd6d6;padding:10px;border-radius:8px;display:none;font-size:0.85rem;"></div>
+
+    <script src="script.js?v=3.3.0"></script>
+</body>
+</html>
